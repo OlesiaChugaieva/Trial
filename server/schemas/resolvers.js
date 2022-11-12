@@ -1,20 +1,34 @@
-const { User, Post } = require('../models');
+const { AuthenticationError } = require('apollo-server-express');
+const { User, Post, Todo } = require('../models');
 const { signToken } = require('../utils/auth');
 
 const resolvers = {
     Query: {
-        me: async (parent, args, context) => {
-            if (context.user) {
-                return User.findOne({ _id: context.user._id }).select('-__v -password').populate('thoughts');
-            }
-            throw new AuthenticationError('You need to be logged in!');
+        users: async () => {
+            return User.find().populate('posts');
         },
-        posts: async () => {
-            return Post.find();
+        user: async (parent, { username }) => {
+            return User.findOne({ username }).populate('posts');
         },
-
+        posts: async (parent, { username }) => {
+            const params = username ? { username } : {};
+            return Post.find(params).sort({ createdAt: -1 });
+        },
         post: async (parent, { postId }) => {
             return Post.findOne({ _id: postId });
+        },
+        todos: async (parent, { username }) => {
+            const params = username ? { username } : {};
+            return Todo.find(params).sort({ createdAt: -1 });
+        },
+        todo: async (parent, { todoId }) => {
+            return Todo.findOne({ _id: todoId });
+        },
+        me: async (parent, args, context) => {
+            if (context.user) {
+                return User.findOne({ _id: context.user._id }).populate('posts');
+            }
+            throw new AuthenticationError('You need to be logged in!');
         },
     },
 
@@ -41,30 +55,105 @@ const resolvers = {
 
             return { token, user };
         },
-        addPost: async (parent, { name }) => {
-            return Post.create({ name });
+        addPost: async (parent, { image, postText }, context) => {
+            if (context.user) {
+                const post = await Post.create({
+                    image,
+                    postText,
+                    postAuthor: context.user.username,
+                });
+
+                await User.findOneAndUpdate(
+                    { _id: context.user._id },
+                    { $addToSet: { posts: post._id } }
+                );
+
+                return post;
+            }
+            throw new AuthenticationError('You need to be logged in!');
         },
-        addCaption: async (parent, { postId, caption }) => {
-            return Post.findOneAndUpdate(
-                { _id: postId },
-                {
-                    $addToSet: { captions: caption },
-                },
-                {
-                    new: true,
-                    runValidators: true,
-                }
-            );
+        addComment: async (parent, { postId, commentText }, context) => {
+            if (context.user) {
+                return Post.findOneAndUpdate(
+                    { _id: postId },
+                    {
+                        $addToSet: {
+                            comments: { commentText, commentAuthor: context.user.username },
+                        },
+                    },
+                    {
+                        new: true,
+                        runValidators: true,
+                    }
+                );
+            }
+            throw new AuthenticationError('You need to be logged in!');
         },
-        removePost: async (parent, { postId }) => {
-            return Post.findOneAndDelete({ _id: postId });
+        removePost: async (parent, { postId }, context) => {
+            if (context.user) {
+                const post = await Post.findOneAndDelete({
+                    _id: postId,
+                    postAuthor: context.user.username,
+                });
+
+                await User.findOneAndUpdate(
+                    { _id: context.user._id },
+                    { $pull: { posts: post._id } }
+                );
+
+                return post;
+            }
+            throw new AuthenticationError('You need to be logged in!');
         },
-        removeCaption: async (parent, { postId, caption }) => {
-            return Post.findOneAndUpdate(
-                { _id: postId },
-                { $pull: { captions: caption } },
-                { new: true }
-            );
+        removeComment: async (parent, { postId, commentId }, context) => {
+            if (context.user) {
+                return Post.findOneAndUpdate(
+                    { _id: postId },
+                    {
+                        $pull: {
+                            comments: {
+                                _id: commentId,
+                                commentAuthor: context.user.username,
+                            },
+                        },
+                    },
+                    { new: true }
+                );
+            }
+            throw new AuthenticationError('You need to be logged in!');
+        },
+        addTodo: async (parent, { name, todoText }, context) => {
+            if (context.user) {
+                const todo = await Todo.create({
+                    name,
+                    todoText,
+                    postAuthor: context.user.username,
+                });
+
+                await User.findOneAndUpdate(
+                    { _id: context.user._id },
+                    { $addToSet: { todos: todo._id } }
+                );
+
+                return todo;
+            }
+            throw new AuthenticationError('You need to be logged in!');
+        },
+        removeTodo: async (parent, { todoId }, context) => {
+            if (context.user) {
+                const todo = await Todo.findOneAndDelete({
+                    _id: todoId,
+                    postAuthor: context.user.username,
+                });
+
+                await User.findOneAndUpdate(
+                    { _id: context.user._id },
+                    { $pull: { todos: todo._id } }
+                );
+
+                return todo;
+            }
+            throw new AuthenticationError('You need to be logged in!');
         },
     },
 };

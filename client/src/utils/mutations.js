@@ -25,23 +25,34 @@ export const ADD_USER = gql`
 `;
 
 export const ADD_POST = gql`
-  mutation addPost($name: String!) {
-    addPost(name: $name) {
+  mutation addPost($image: String!, $postText: String!) {
+    addPost(image: $image, postText: $postText) {
       _id
-      name
       image
-      captions
+      postText
+      postAuthor
+      createdAt
+      comments {
+        _id
+        commentText
+      }
     }
   }
 `;
 
-export const ADD_CAPTION = gql`
-  mutation addCaption($postId: ID!, $caption: String!) {
-    addCaption(postId: $postId, caption: $caption) {
+export const ADD_COMMENT = gql`
+  mutation addComment($postId: ID!, $commentText: String!) {
+    addComment(postId: $postId, commentText: $commentText) {
       _id
-      name
       image
-      captions
+      postText
+      postAuthor
+      createdAt
+      comments {
+        _id
+        commentText
+        createdAt
+      }
     }
   }
 `;

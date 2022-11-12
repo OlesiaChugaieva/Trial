@@ -1,12 +1,13 @@
 const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
 const path = require('path');
-const cors = require('cors')
-const busBoy = require('connect-busboy')
-// const { authMiddleware } = require('./utils/auth');
+const { authMiddleware } = require('./utils/auth');
 
 const { typeDefs, resolvers } = require('./schemas');
 const db = require('./config/connection');
+
+const cors = require('cors')
+const busBoy = require('connect-busboy')
 
 const routerPosts = require('./routers/routerPosts')
 
@@ -15,7 +16,7 @@ const app = express();
 const server = new ApolloServer({
     typeDefs,
     resolvers,
-    // context: authMiddleware,
+    context: authMiddleware,
 });
 
 app.use(cors({
@@ -24,6 +25,8 @@ app.use(cors({
   }))
 app.use(busBoy())
 app.use('/static',express.static(__dirname+'/static'))
+
+app.use('/api-user', routerPosts)
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -36,7 +39,6 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/build/index.html'));
 });
 
-app.use('/api-posts', routerPosts)
 
 // Create a new instance of an Apollo server with the GraphQL schema
 const startApolloServer = async (typeDefs, resolvers) => {

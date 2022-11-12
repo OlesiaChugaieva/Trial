@@ -1,88 +1,55 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
-function NavTabs({ currentPage, handlePageChange }) {
-
+function NavTabs() {
   const styles = {
     footer: {
       backgroundColor: "white",
       display: "flex",
       alignItems: "center",
-      justifyContent: "center",
+      justifyContent: "space-around",
       position: "fixed",
       left: "0",
       bottom: "0",
       width: "100%",
       height: "40px",
+      borderTop: '2px solid #5d0cff',
     },
     link: {
-      color: "#8e94f2",
+      color: "#5d0cff",
     },
   };
   return (
-    <footer style={styles.footer}>
-      <ul className="nav nav-tabs">
-        <li className="nav-item">
-          <a
-            style={styles.link}
-            href="#home"
-            onClick={() => handlePageChange("Home")}
-            className={currentPage === "About" ? "nav-link active" : "nav-link"}
-          >
+    <footer className="footer">
+      <ul className="nav nav-tabs" style={styles.footer}>
+        <Link className="btn m-2" to="/">
+          <li className="nav-item" style={styles.link}>
             Home
-          </a>
-        </li>
-        <li className="nav-item">
-          <a
-            style={styles.link}
-            href="#search"
-            onClick={() => handlePageChange("Portfolio")}
-            className={
-              currentPage === "Search" ? "nav-link active" : "nav-link"
-            }
-          >
-            Search
-          </a>
-        </li>
-        <li className="nav-item">
-          <a
-            style={styles.link}
-            href="#create"
-            onClick={() => handlePageChange("Create")}
-            className={
-              currentPage === "Create" ? "nav-link active" : "nav-link"
-            }
-          >
-            Create
-          </a>
-        </li>
-        <li className="nav-item">
-          <a
-            style={styles.link}
-            href="#messages"
-            onClick={() => handlePageChange("Messages")}
-            className={
-              currentPage === "Messages" ? "nav-link active" : "nav-link"
-            }
-          >
-            Messages
-          </a>
-        </li>
-        <li className="nav-item">
-          <a
-            style={styles.link}
-            href="#profile"
-            onClick={() => handlePageChange("Profile")}
-            className={
-              currentPage === "Profile" ? "nav-link active" : "nav-link"
-            }
-          >
+          </li>
+        </Link>
+        <Link className="btn m-2" to="/post">
+          <li className="nav-item" style={styles.link}>
+            Post
+          </li>
+        </Link>
+        <Link className="btn m-2" to="/todoList">
+          <li className="nav-item" style={styles.link}>
+            To-Do
+          </li>
+        </Link>
+        <Link className="btn m-2" to="/notes">
+          <li className="nav-item" style={styles.link}>
+            Notes
+          </li>
+        </Link>
+        <Link className="btn m-2" to="/me">
+          <li className="nav-item" style={styles.link}>
             Profile
-          </a>
-        </li>
+          </li>
+        </Link>
       </ul>
     </footer>
   );
-
 }
 
 export default NavTabs;

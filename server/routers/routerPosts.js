@@ -8,5 +8,8 @@ router.post('/get', controller.GetOnePost)
 
 router.post('/uploadPhoto', controller.UploadPhoto)
 router.post('/save-photo', controller.SavePhoto)
+router.get('/get-avatar', controller.GetAvatar)
+
+router.get('/change-bio', controller.ChangeBio)
 
 module.exports = router
